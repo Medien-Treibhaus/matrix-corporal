@@ -116,12 +116,22 @@ func (me *SynapseConnector) EnsureUserAccountExists(userId string) error {
 	// Whenever users need to log in, we intercept the /login API
 	// and possibly turn the call into a request that shared-secret-auth understands
 	// (see LoginInterceptor).
-	passwordBytes, err := util.GenerateRandomBytes(64)
-	if err != nil {
-		return err
+	//// passwordBytes, err := util.GenerateRandomBytes(64)
+	//// if err != nil {
+	////	return err
+	//// }
+	//// password := fmt.Sprintf("%x", passwordBytes)
+	
+	// This is to try to call AuthCredential and use it as the synapse password when creating the user
+	
+	policy := me.policyStore.Get()
+	if policy == nil {
+		return createInterceptorErrorResponse(loggingContextFields, matrix.ErrorUnknown, "Missing policy")
 	}
-	password := fmt.Sprintf("%x", passwordBytes)
 
+	userPolicy := policy.GetUserPolicyByUserId(userId)
+	password := userPolicy.AuthCredential
+	
 	// Generating the HMAC the same way that the `register_new_matrix_user` script from Matrix Synapse does it.
 	mac := hmac.New(sha1.New, []byte(me.registrationSharedSecret))
 	mac.Write([]byte(nonceResponse.Nonce))
