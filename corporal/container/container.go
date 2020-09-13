@@ -274,6 +274,7 @@ func BuildContainer(
 
 	container.Set("connector.synapse", func(c service.Container) interface{} {
 		return connector.NewSynapseConnector(
+			container.Get("policy.store").(*policy.Store),
 			container.Get("connector.api").(*connector.ApiConnector),
 			configuration.Matrix.RegistrationSharedSecret,
 		)
