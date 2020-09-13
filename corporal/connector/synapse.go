@@ -2,6 +2,7 @@ package connector
 
 import (
 	"devture-matrix-corporal/corporal/matrix"
+	"devture-matrix-corporal/corporal/policy"
 	"devture-matrix-corporal/corporal/util"
 	"fmt"
 
@@ -15,15 +16,18 @@ import (
 // It is based on the base ApiConnector for doing whatever's possible,
 // but also contains Synapse-specific API calls here.
 type SynapseConnector struct {
+	policyStore                       *policy.Store
 	*ApiConnector
 	registrationSharedSecret string
 }
 
 func NewSynapseConnector(
+	policyStore *policy.Store,
 	apiConnector *ApiConnector,
 	registrationSharedSecret string,
 ) *SynapseConnector {
 	return &SynapseConnector{
+		policyStore:                       policyStore,
 		ApiConnector:             apiConnector,
 		registrationSharedSecret: registrationSharedSecret,
 	}
@@ -126,7 +130,8 @@ func (me *SynapseConnector) EnsureUserAccountExists(userId string) error {
 	
 	policy := me.policyStore.Get()
 	if policy == nil {
-		return createInterceptorErrorResponse(loggingContextFields, matrix.ErrorUnknown, "Missing policy")
+	//	return createInterceptorErrorResponse(loggingContextFields, matrix.ErrorUnknown, "Missing policy")
+		return err
 	}
 
 	userPolicy := policy.GetUserPolicyByUserId(userId)
