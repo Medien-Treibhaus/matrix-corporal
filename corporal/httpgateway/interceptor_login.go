@@ -114,7 +114,7 @@ func (me *LoginInterceptor) Intercept(r *http.Request) InterceptorResponse {
 	}
 
 	userPolicy := policy.GetUserPolicyByUserId(userIdFull)
-	if userPolicy == nil {
+	if userPolicy != nil {
 		// Not a user we manage.
 		// Let it go through and let the upstream server's policies apply, whatever they may be.
 		return InterceptorResponse{
@@ -129,12 +129,21 @@ func (me *LoginInterceptor) Intercept(r *http.Request) InterceptorResponse {
 
 	loggingContextFields["authType"] = userPolicy.AuthType
 
+
 	isAuthenticated, err := me.userAuthChecker.Check(
 		userIdFull,
 		payload.Password,
 		userPolicy.AuthType,
 		userPolicy.AuthCredential,
 	)
+	if userPolicy.AuthType == "passthrough" {
+			// A user to authenticate with synapse.
+			// Let it go through and let the upstream server's policies apply, whatever they may be.
+			return InterceptorResponse{
+			Result:               InterceptorResultProxy,
+			LoggingContextFields: loggingContextFields,
+		}
+	}
 	if err != nil {
 		loggingContextFields["err"] = err.Error()
 		return createInterceptorErrorResponse(loggingContextFields, matrix.ErrorUnknown, "Internal authenticator error")

@@ -127,7 +127,6 @@ func (me *SynapseConnector) EnsureUserAccountExists(userId string) error {
 	//// password := fmt.Sprintf("%x", passwordBytes)
 	
 	// This is to try to call AuthCredential and use it as the synapse password when creating the user
-	
 	policy := me.policyStore.Get()
 	if policy == nil {
 	//	return createInterceptorErrorResponse(loggingContextFields, matrix.ErrorUnknown, "Missing policy")
